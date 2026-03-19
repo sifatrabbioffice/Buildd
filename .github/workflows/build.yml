@@ -1,0 +1,51 @@
+name: Build postmarketOS for Gauguin
+
+on:
+  workflow_dispatch: # ম্যানুয়ালি বিল্ড শুরু করার জন্য
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y pmbootstrap python3 openssl
+
+      - name: Initialize pmbootstrap
+        run: |
+          # এখানে edge চ্যানেল ব্যবহার করা হচ্ছে লেটেস্ট সাপোর্টের জন্য
+          pmbootstrap init <<EOF
+          /home/runner/work/pmbootstrap
+          edge
+          xiaomi
+          gauguin
+          
+          
+          xfce4
+          
+          
+          
+          EOF
+
+      - name: Build Rootfs Image
+        run: |
+          # ইমেজ তৈরি করা
+          pmbootstrap install --no-fsprogs
+
+      - name: Export Flashable Image
+        run: |
+          # ফ্লাশযোগ্য ফাইল এক্সপোর্ট করা
+          pmbootstrap export
+          mkdir output
+          cp /tmp/postmarketOS-export/* output/
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: postmarketOS-Gauguin-Image
+          path: output/
+          
